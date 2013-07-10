@@ -17,6 +17,7 @@ CTRL_SRCS-y       += xc_flask.c
 CTRL_SRCS-y       += xc_physdev.c
 CTRL_SRCS-y       += xc_private.c
 CTRL_SRCS-y       += xc_sedf.c
+CTRL_SRCS-y       += xc_gedf.c
 CTRL_SRCS-y       += xc_csched.c
 CTRL_SRCS-y       += xc_csched2.c
 CTRL_SRCS-y       += xc_arinc653.c

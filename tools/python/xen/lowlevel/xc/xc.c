@@ -1622,6 +1622,58 @@ static PyObject *pyxc_sched_credit_domain_get(XcObject *self, PyObject *args)
                          "cap",     sdom.cap);
 }
 
+static PyObject *pyxc_sched_gedf_domain_set(XcObject *self,
+                                              PyObject *args,
+                                              PyObject *kwds)
+{
+    uint32_t domid;
+    uint32_t period;
+    uint32_t budget;
+    uint16_t vcpu;
+    uint16_t extra;
+    static char *kwd_list[] = { "domid", "period", "budget", "vcpu", "extra", NULL };
+    static char kwd_type[] = "I|HHHH";
+    struct xen_domctl_sched_gedf sdom;
+    
+    period = 10;
+    budget = 4;
+    vcpu = 0;
+    extra = 2;
+
+    if( !PyArg_ParseTupleAndKeywords(args, kwds, kwd_type, kwd_list, 
+                                     &domid, &period, &budget, &vcpu, &extra) )
+        return NULL;
+
+    sdom.period = period;
+    sdom.budget = budget;
+    sdom.vcpu = vcpu;
+    sdom.extra = extra;
+
+    if ( xc_sched_gedf_domain_set(self->xc_handle, domid, &sdom) != 0 )
+        return pyxc_error_to_exception(self->xc_handle);
+
+    Py_INCREF(zero);
+    return zero;
+}
+
+static PyObject *pyxc_sched_gedf_domain_get(XcObject *self, PyObject *args)
+{
+    uint32_t domid;
+    struct xen_domctl_sched_gedf sdom;
+    
+    if( !PyArg_ParseTuple(args, "I", &domid) )
+        return NULL;
+    
+    if ( xc_sched_gedf_domain_get(self->xc_handle, domid, &sdom) != 0 )
+        return pyxc_error_to_exception(self->xc_handle);
+
+    return Py_BuildValue("{s:H,s:H,s:H,s:H}",
+                         "period",  sdom.period,
+                         "budget",  sdom.budget,
+                         "vcpu",    sdom.vcpu,
+                         "extra",   sdom.extra);
+}
+
 static PyObject *pyxc_sched_credit2_domain_set(XcObject *self,
                                               PyObject *args,
                                               PyObject *kwds)
@@ -2586,6 +2638,30 @@ static PyMethodDef pyxc_methods[] = {
       "Returns:   [dict]\n"
       " weight    [short]: domain's scheduling weight\n"},
 
+    { "sched_gedf_domain_set",
+      (PyCFunction)pyxc_sched_gedf_domain_set,
+      METH_KEYWORDS, "\n"
+      "Set the scheduling parameters for a domain when running with gedf scheduler.\n"
+      " dom       [int]:  domain to set\n"
+      " period    [int]: vcpu's scheduling period\n"
+      " budget    [int]: vcpu's budget per period\n"
+      " vcpu      [int]: vcpu's number\n"
+      " extra     [int]:  domain can take extratime?\n"
+      "Returns: [int] 0 on success; -1 on error.\n" },
+
+    { "sched_gedf_domain_get",
+      (PyCFunction)pyxc_sched_gedf_domain_get,
+      METH_VARARGS, "\n"
+      "Get the current scheduling parameters for a domain when running with\n"
+      "the gedf scheduler."
+      " dom       [int]: domain to query\n"
+      "Returns:   [dict]\n"
+      " domain    [int]: domain ID\n"
+      " period    [int]: scheduler period\n"
+      " budget    [int]: CPU budget per period\n"
+      " vcpu      [int]: vcpu number\n"
+      " extra     [int]:  domain can take extratime?\n"},
+
     { "sched_credit2_domain_set",
       (PyCFunction)pyxc_sched_credit2_domain_set,
       METH_KEYWORDS, "\n"
@@ -3095,6 +3171,7 @@ PyMODINIT_FUNC initxc(void)
     PyModule_AddIntConstant(m, "XEN_SCHEDULER_SEDF", XEN_SCHEDULER_SEDF);
     PyModule_AddIntConstant(m, "XEN_SCHEDULER_CREDIT", XEN_SCHEDULER_CREDIT);
     PyModule_AddIntConstant(m, "XEN_SCHEDULER_CREDIT2", XEN_SCHEDULER_CREDIT2);
+    PyModule_AddIntConstant(m, "XEN_SCHEDULER_GEDF", XEN_SCHEDULER_GEDF);
 
 }
 
