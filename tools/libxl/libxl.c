@@ -1,4 +1,4 @@
-/*
+c/*
  * Copyright (C) 2009      Citrix Ltd.
  * Author Vincent Hanquez <vincent.hanquez@eu.citrix.com>
  * Author Stefano Stabellini <stefano.stabellini@eu.citrix.com>
@@ -4464,6 +4464,71 @@ int libxl_sched_credit_params_set(libxl_ctx *ctx, uint32_t poolid,
 
     scinfo->tslice_ms = sparam.tslice_ms;
     scinfo->ratelimit_us = sparam.ratelimit_us;
+
+    return 0;
+}
+
+int libxl_sched_gedf_domain_get(libxl_ctx *ctx, uint32_t domid, libxl_sched_gedf *scinfo)
+{
+    struct xen_domctl_sched_gedf sdom;
+    int rc;
+
+    rc = xc_sched_gedf_domain_get(ctx->xch, domid, &sdom);
+    if (rc != 0) {
+        LIBXL__LOG_ERRNO(ctx, LIBXL__LOG_ERROR, "setting domain sched gedf");
+        return ERROR_FAIL;
+    }
+
+    scinfo->budget = sdom.budget;
+    scinfo->period = sdom.period;
+    scinfo->extra = sdom.extra;
+    scinfo->vcpu = sdom.vcpu;
+
+    return 0;
+}
+
+int libxl_sched_gedf_domain_set(libxl_ctx *ctx, uint32_t domid, libxl_sched_gedf *scinfo)
+{
+    struct xen_domctl_sched_gedf sdom;
+    xc_domaininfo_t domaininfo;
+    int rc;
+
+    rc = xc_domain_getinfolist(ctx->xch, domid, 1, &domaininfo);
+    if (rc < 0) {
+        LIBXL__LOG_ERRNO(ctx, LIBXL__LOG_ERROR, "getting domain info list");
+        return ERROR_FAIL;
+    }
+    if (rc != 1 || domaininfo.domain != domid)
+        return ERROR_INVAL;
+
+    if (scinfo->budget < 1 || scinfo->budget > 65535) {
+        LIBXL__LOG_ERRNOVAL(ctx, LIBXL__LOG_ERROR, rc,
+            "Domain budget out of range, valid values are within range from 1 to 65535");
+        return ERROR_INVAL;
+    }
+
+    if (scinfo->period < 1 || scinfo->period > 65535) {
+        LIBXL__LOG_ERRNOVAL(ctx, LIBXL__LOG_ERROR, rc,
+            "Domain period out of range, valid values are within range from 1 to 65535");
+        return ERROR_INVAL;
+    }
+
+    if (scinfo->extra < 0 || scinfo->extra > 2) {
+        LIBXL__LOG_ERRNOVAL(ctx, LIBXL__LOG_ERROR, rc,
+            "Domain extra out of range, valid values are within range from 0 to 2");
+        return ERROR_INVAL;
+    }
+
+    sdom.vcpu = scinfo->vcpu;
+    sdom.budget = scinfo->budget;
+    sdom.period = scinfo->period;
+    sdom.extra = scinfo->extra;
+
+    rc = xc_sched_gedf_domain_set(ctx->xch, domid, &sdom);
+    if ( rc < 0 ) {
+        LIBXL__LOG_ERRNO(ctx, LIBXL__LOG_ERROR, "setting domain sched gedf");
+        return ERROR_FAIL;
+    }
 
     return 0;
 }

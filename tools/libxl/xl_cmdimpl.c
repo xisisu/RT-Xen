@@ -4816,6 +4816,132 @@ int main_sharing(int argc, char **argv)
     return 0;
 }
 
+static int sched_gedf_domain_get(
+    int domid, libxl_sched_gedf *scinfo)
+{
+    int rc;
+
+    rc = libxl_sched_gedf_domain_get(&ctx, domid, scinfo);
+    if (rc)
+        fprintf(stderr, "libxl_sched_gedf_domain_get failed.\n");
+    
+    return rc;
+}
+
+static int sched_gedf_domain_set(
+    int domid, libxl_sched_gedf *scinfo)
+{
+    int rc;
+
+    rc = libxl_sched_gedf_domain_set(&ctx, domid, scinfo);
+    if (rc)
+        fprintf(stderr, "libxl_sched_gedf_domain_set failed.\n");
+
+    return rc;
+}
+
+static void sched_gedf_domain_output(
+    int domid, libxl_sched_gedf *scinfo)
+{
+    char *domname;
+    domname = libxl_domid_to_name(&ctx, domid);
+    printf("%-33s %4d %6d %6d %6d %6d\n",
+        domname,
+        domid,
+        scinfo->period,
+        scinfo->budget,
+        scinfo->vcpu,
+        scinfo->extra);
+    free(domname);
+}
+
+int main_sched_gedf(int argc, char **argv)
+{
+    libxl_dominfo *info;
+    libxl_sched_gedf scinfo;
+    int nb_domain, i;
+    const char *dom = NULL;
+    int period = 10, budget = 4, vcpu = 0, extra = 2;
+    int opt_p = 0, opt_b = 0, opt_v = 0, opt_e = 0;
+    int opt, rc;
+
+    while ((opt = getopt(argc, argv, "hd:p:b:v:e:")) != -1) {
+        switch (opt) {
+        case 'd':
+            dom = optarg;
+            break;
+        case 'p':
+            period = strtol(optarg, NULL, 10);
+            opt_p = 1;
+            break;
+        case 'b':
+            budget = strtol(optarg, NULL, 10);
+            opt_b = 1;
+            break;
+        case 'v':
+            vcpu = strtol(optarg, NULL, 10);
+            opt_v = 1;
+            break;
+        case 'e':
+            extra = strtol(optarg, NULL, 10);
+            opt_e = 1;
+            break;
+        case 'h':
+            help("sched-gedf");
+            return 0;
+        default:
+            fprintf(stderr, "option `%c' not supported.\n", optopt);
+            break;
+        }
+    }
+
+    if (!dom && (opt_p || opt_b || opt_v || opt_e)) {
+        fprintf(stderr, "Must specify a domain.\n");
+        return 1;
+    }
+
+    if (!dom) { /* list all domain's gedf scheduler info */
+        info = libxl_list_domain(&ctx, &nb_domain);
+        if (!info) {
+            fprintf(stderr, "libxl_domain_infolist failed.\n");
+            return 1;
+        }
+
+        printf("%-33s %4s %6s %6s %6s %6s\n", "Name", "ID", "Period", "Budget", "VCPU", "Extra");
+        for (i = 0; i < nb_domain; i++) {
+            rc = sched_gedf_domain_get(info[i].domid, &scinfo);
+            if (rc)
+                return -rc;
+            sched_gedf_domain_output(info[i].domid, &scinfo);
+        }
+    } else {
+        find_domain(dom);
+
+        rc = sched_gedf_domain_get(domid, &scinfo);
+        if (rc)
+            return -rc;
+
+        if (!opt_p && !opt_b && !opt_v && !opt_e) { /* output gedf scheduler info */
+            printf("%-33s %4s %6s %6s %6s %6s\n", "Name", "ID", "Period", "Budget", "VCPU", "Extra");
+            sched_gedf_domain_output(domid, &scinfo);
+        } else { /* set gedf scheduler paramaters */
+            if (opt_p)
+                scinfo.period = period;
+            if (opt_b)
+                scinfo.budget = budget;
+            if (opt_v)
+                scinfo.vcpu = vcpu;
+            if (opt_e)
+                scinfo.extra = extra;
+            rc = sched_gedf_domain_set(domid, &scinfo);
+            if (rc)
+                return -rc;
+        }
+    }
+
+    return 0;
+}
+
 static int sched_domain_get(libxl_scheduler sched, int domid,
                             libxl_domain_sched_params *scinfo)
 {

@@ -116,6 +116,7 @@ libxl_scheduler = Enumeration("scheduler", [
     (5, "credit"),
     (6, "credit2"),
     (7, "arinc653"),
+	(8, "gedf"),
     ])
 
 # Consistent with SHUTDOWN_* in sched.h

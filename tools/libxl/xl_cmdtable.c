@@ -247,6 +247,16 @@ struct cmd_spec cmd_table[] = {
       "-r RLIMIT, --ratelimit_us=RLIMIT  Set the scheduling rate limit, in microseconds\n"
       "-p CPUPOOL, --cpupool=CPUPOOL     Restrict output to CPUPOOL"
     },
+    { "sched-gedf",
+      &main_sched_gedf,
+      "Get/set gedf scheduler parameters",
+      "[-d <Domain> [-p[=PERIOD]|-b[=BUDGET]|-v[=VCPU]|-e[=EXTRA]]]",
+      "-d DOMAIN, --domain=DOMAIN     Domain to modify\n"
+      "-w PERIOD, --period=PERIOD     Period (int)\n"
+      "-b BUDGET, --budget=BUDGET     Budget (int)\n"
+      "-v VCPU,   --vcpu=VCPU         VCPU (int)\n"
+      "-e EXTRA,  --extra=EXTRA       Extra (int)"
+    },
     { "sched-credit2",
       &main_sched_credit2, 0, 1,
       "Get/set credit2 scheduler parameters",
