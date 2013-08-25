@@ -2010,6 +2010,30 @@ class XendDomainInfo:
     def setWeight(self, cpu_weight):
         self.info['vcpus_params']['weight'] = cpu_weight
 
+    def getPeriod(self):
+        return self.info['vcpus_params']['period']
+
+    def setPeriod(self, cpu_period):
+        self.info['vcpus_params']['period'] = cpu_period
+
+    def getBudget(self):
+        return self.info['vcpus_params']['budget']
+
+    def setBudget(self, cpu_budget):
+        self.info['vcpus_params']['budget'] = cpu_budget
+
+    def getVcpu(self):
+        return self.info['vcpus_params']['vcpu']
+
+    def setVcpu(self, cpu_vcpu):
+        self.info['vcpus_params']['vcpu'] = cpu_vcpu
+
+    def getExtra(self):
+        return self.info['extras_params']['extra']
+
+    def setExtra(self, cpu_extra):
+        self.info['extras_params']['extra'] = cpu_extra
+
     def getRestartCount(self):
         return self._readVm('xend/restart_count')
 
@@ -2835,6 +2859,20 @@ class XendDomainInfo:
             from xen.xend import XendDomain
             XendDomain.instance().domain_sched_credit2_set(self.getDomid(),
                                                            self.getWeight())
+        elif XendNode.instance().xenschedinfo() == 'rtglobal':
+            from xen.xend import XendDomain
+            XendDomain.instance().domain_sched_rtglobal_set(self.getDomid(),
+                                                            self.getPeriod(),
+                                                            self.getBudget(),
+                                                            self.getVcpu(),
+                                                            self.getExtra())
+        elif XendNode.instance().xenschedinfo() == 'rtpartition':
+            from xen.xend import XendDomain
+            XendDomain.instance().domain_sched_rtpartition_set(self.getDomid(),
+                                                            self.getPeriod(),
+                                                            self.getBudget(),
+                                                            self.getVcpu(),
+                                                            self.getExtra())
 
     def _initDomain(self):
         log.debug('XendDomainInfo.initDomain: %s %s',

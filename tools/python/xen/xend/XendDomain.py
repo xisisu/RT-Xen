@@ -1778,6 +1778,205 @@ class XendDomain:
             log.exception(ex)
             raise XendError(str(ex))
 
+# rtglobal
+    def domain_sched_rtglobal_get(self, domid):
+        """Get rtglobal scheduler parameters for a domain.
+
+        @param domid: Domain ID or Name
+        @type domid: int or string.
+        @rtype: dict with keys 'period', 'budget', 'vcpu' and 'extra'
+        @return: rtglobal scheduler parameters
+        """
+        dominfo = self.domain_lookup_nr(domid)
+        if not dominfo:
+            raise XendInvalidDomain(str(domid))
+        
+        if dominfo._stateGet() in (DOM_STATE_RUNNING, DOM_STATE_PAUSED):
+            try:
+                return xc.sched_rtglobal_domain_get(dominfo.getDomid())
+            except Exception, ex:
+                raise XendError(str(ex))
+        else:
+            return {'period' : dominfo.getPeriod(),
+                    'budget' : dominfo.getBudget(),
+                    'vcpu'   : dominfo.getVcpu(),
+                    'extra'  : dominfo.getExtra()}
+    
+    def domain_sched_rtglobal_set(self, domid, period = None, budget = None, vcpu = None, extra = None):
+        """Set rtglobal scheduler parameters for a domain.
+
+        @param domid: Domain ID or Name
+        @type domid: int or string.
+        @type period: int
+        @type budget: int
+        @type vcpu: int
+        @type extra: int
+        @rtype: 0
+        """
+
+        set_period = False
+        set_budget = False
+        set_vcpu = False
+        set_extra = False
+        dominfo = self.domain_lookup_nr(domid)
+        if not dominfo:
+            raise XendInvalidDomain(str(domid))
+        try:
+            if period is None:
+                period = int(0)
+            elif period < 1 or period > 65535:
+                raise XendError("Cpu period out of range, valid values are "
+                                "within range from 1 to 65535")
+            else:
+                set_period = True
+
+            if budget is None:
+                budget = int(0)
+            elif budget < 1 or budget > 65535:
+                raise XendError("Cpu budget out of range, valid values are "
+                                "within range from 1 to 65535")
+            else:
+                set_budget = True
+
+            if vcpu is None:
+                vcpu = int(0)
+            elif vcpu < 1 or vcpu > 65535:
+                raise XendError("Cpu vcpu out of range, valid values are "
+                                "within range from 1 to 65535")
+            else:
+                set_vcpu = True
+
+            if extra is None:
+                extra = int(0)
+            elif extra < 1 or extra > 65535:
+                raise XendError("Cpu extra out of range, valid values are "
+                                "within range from 1 to 65535")
+            else:
+                set_extra = True
+
+            assert type(period) == int
+            assert type(budget) == int
+            assert type(vcpu) == int
+            assert type(extra) == int
+
+            rc = 0
+            if dominfo._stateGet() in (DOM_STATE_RUNNING, DOM_STATE_PAUSED):
+                rc = xc.sched_rtglobal_domain_set(dominfo.getDomid(), period, budget, vcpu, extra)
+            if rc == 0:
+                if set_period:
+                    dominfo.setPeriod(period)
+                if set_budget:
+                    dominfo.setBudget(budget)
+                if set_vcpu:
+                    dominfo.setVcpu(vcpu)
+                if set_extra:
+                    dominfo.setExtra(extra)                    
+                self.managed_config_save(dominfo)
+            return rc
+        except Exception, ex:
+            log.exception(ex)
+            raise XendError(str(ex))
+
+# rtpartition
+    def domain_sched_rtpartition_get(self, domid):
+        """Get rtpartition scheduler parameters for a domain.
+
+        @param domid: Domain ID or Name
+        @type domid: int or string.
+        @rtype: dict with keys 'period', 'budget', 'vcpu' and 'extra'
+        @return: rtpartition scheduler parameters
+        """
+        dominfo = self.domain_lookup_nr(domid)
+        if not dominfo:
+            raise XendInvalidDomain(str(domid))
+        
+        if dominfo._stateGet() in (DOM_STATE_RUNNING, DOM_STATE_PAUSED):
+            try:
+                return xc.sched_rtpartition_domain_get(dominfo.getDomid())
+            except Exception, ex:
+                raise XendError(str(ex))
+        else:
+            return {'period' : dominfo.getPeriod(),
+                    'budget' : dominfo.getBudget(),
+                    'vcpu'   : dominfo.getVcpu(),
+                    'extra'  : dominfo.getExtra()}
+    
+    def domain_sched_rtpartition_set(self, domid, period = None, budget = None, vcpu = None, extra = None):
+        """Set rtpartition scheduler parameters for a domain.
+
+        @param domid: Domain ID or Name
+        @type domid: int or string.
+        @type period: int
+        @type budget: int
+        @type vcpu: int
+        @type extra: int
+        @rtype: 0
+        """
+
+        set_period = False
+        set_budget = False
+        set_vcpu = False
+        set_extra = False
+        dominfo = self.domain_lookup_nr(domid)
+        if not dominfo:
+            raise XendInvalidDomain(str(domid))
+        try:
+            if period is None:
+                period = int(0)
+            elif period < 1 or period > 65535:
+                raise XendError("Cpu period out of range, valid values are "
+                                "within range from 1 to 65535")
+            else:
+                set_period = True
+
+            if budget is None:
+                budget = int(0)
+            elif budget < 1 or budget > 65535:
+                raise XendError("Cpu budget out of range, valid values are "
+                                "within range from 1 to 65535")
+            else:
+                set_budget = True
+
+            if vcpu is None:
+                vcpu = int(0)
+            elif vcpu < 1 or vcpu > 65535:
+                raise XendError("Cpu vcpu out of range, valid values are "
+                                "within range from 1 to 65535")
+            else:
+                set_vcpu = True
+
+            if extra is None:
+                extra = int(0)
+            elif extra < 1 or extra > 65535:
+                raise XendError("Cpu extra out of range, valid values are "
+                                "within range from 1 to 65535")
+            else:
+                set_extra = True
+
+            assert type(period) == int
+            assert type(budget) == int
+            assert type(vcpu) == int
+            assert type(extra) == int
+
+            rc = 0
+            if dominfo._stateGet() in (DOM_STATE_RUNNING, DOM_STATE_PAUSED):
+                rc = xc.sched_rtpartition_domain_set(dominfo.getDomid(), period, budget, vcpu, extra)
+            if rc == 0:
+                if set_period:
+                    dominfo.setPeriod(period)
+                if set_budget:
+                    dominfo.setBudget(budget)
+                if set_vcpu:
+                    dominfo.setVcpu(vcpu)
+                if set_extra:
+                    dominfo.setExtra(extra)                    
+                self.managed_config_save(dominfo)
+            return rc
+        except Exception, ex:
+            log.exception(ex)
+            raise XendError(str(ex))
+
+
     def domain_sched_credit2_get(self, domid):
         """Get credit2 scheduler parameters for a domain.
 

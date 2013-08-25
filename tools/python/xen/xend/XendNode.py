@@ -808,6 +808,11 @@ class XendNode:
             return 'credit'
         elif sched_id == xen.lowlevel.xc.XEN_SCHEDULER_CREDIT2:
             return 'credit2'
+        elif sched_id == xen.lowlevel.xc.XEN_SCHEDULER_RTGLOBAL:
+            return 'rtglobal'
+        elif sched_id == xen.lowlevel.xc.XEN_SCHEDULER_RTPARTITION:
+            return 'rtpartition'
+        
         else:
             return 'unknown'
 
@@ -1022,6 +1027,10 @@ class XendNode:
             return 'credit'
         elif sched_id == xen.lowlevel.xc.XEN_SCHEDULER_CREDIT2:
             return 'credit2'
+        elif sched_id == xen.lowlevel.xc.XEN_SCHEDULER_RTGLOBAL:
+            return 'rtglobal'
+        elif sched_id == xen.lowlevel.xc.XEN_SCHEDULER_RTPARTITION:
+            return 'rtpartition'
         else:
             return 'unknown'
 

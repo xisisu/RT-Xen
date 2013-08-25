@@ -155,6 +155,10 @@ SUBCOMMAND_HELP = {
                      'Get/set credit scheduler parameters.'),
     'sched-credit2': ('[-d <Domain> [-w[=WEIGHT]]',
                      'Get/set credit2 scheduler parameters.'),
+    'sched-rtglobal': ('[-d <Domain> [-p[=PERIOD]|-b[=BUDGET]|-v[=VCPU]|-e[=EXTRA]]',
+                     'Get/set rtglobal scheduler parameters.'),
+    'sched-rtpartition': ('[-d <Domain> [-p[=PERIOD]|-b[=BUDGET]|-v[=VCPU]|-e[=EXTRA]]',
+                     'Get/set rtpartition scheduler parameters.'),
     'sysrq'       : ('<Domain> <letter>', 'Send a sysrq to a domain.'),
     'debug-keys'  : ('<Keys>', 'Send debug keys to Xen.'),
     'trigger'     : ('<Domain> <nmi|reset|init|s3resume|power> [<VCPU>]',
@@ -298,6 +302,20 @@ SUBCOMMAND_OPTIONS = {
        ('-d DOMAIN', '--domain=DOMAIN', 'Domain to modify'),
        ('-w WEIGHT', '--weight=WEIGHT', 'Weight (int)'),
        ('-c CAP',    '--cap=CAP',       'Cap (int)'),
+    ),
+    'sched-rtglobal': (
+       ('-d DOMAIN', '--domain=DOMAIN', 'Domain to modify'),
+       ('-p PERIOD', '--period=PERIOD', 'Period (int)'),
+       ('-p BUDGET', '--budget=BUDGET', 'Budget (int)'),
+       ('-p VCPU',   '--vcpu=VCPU',     'Vcpu (int)'),
+       ('-p EXTRA',  '--extra=EXTRA',   'Extra (int)'),
+    ),
+    'sched-rtpartition': (
+       ('-d DOMAIN', '--domain=DOMAIN', 'Domain to modify'),
+       ('-p PERIOD', '--period=PERIOD', 'Period (int)'),
+       ('-p BUDGET', '--budget=BUDGET', 'Budget (int)'),
+       ('-p VCPU',   '--vcpu=VCPU',     'Vcpu (int)'),
+       ('-p EXTRA',  '--extra=EXTRA',   'Extra (int)'),
     ),
     'sched-credit2': (
        ('-d DOMAIN', '--domain=DOMAIN', 'Domain to modify'),
@@ -454,6 +472,8 @@ host_commands = [
 scheduler_commands = [
     "sched-credit2",
     "sched-credit",
+    "sched-rtglobal",
+    "sched-rtpartition",
     "sched-sedf",
     ]
 
@@ -1830,6 +1850,228 @@ def xm_sched_credit(args):
                     cap)
         else:
             result = server.xend.domain.sched_credit_set(domid, weight, cap)
+            if result != 0:
+                err(str(result))
+
+# rtglobal
+def xm_sched_rtglobal(args):
+    """Get/Set options for rtglobal Scheduler."""
+    
+    check_sched_type('rtglobal')
+
+    try:
+        opts, params = getopt.getopt(args, "d:p:b:v:e:",
+            ["domain=", "period=", "budget=", "vcpu=", "extra="])
+    except getopt.GetoptError, opterr:
+        err(opterr)
+        usage('sched-rtglobal')
+
+    domid = None
+    period = None
+    budget = None
+    vcpu = None
+    extra = None
+
+    for o, a in opts:
+        if o in ["-d", "--domain"]:
+            domid = a
+        elif o in ["-p", "--period"]:
+            period = int(a)
+        elif o in ["-p", "--budget"]:
+            budget = int(a)
+        elif o in ["-p", "--vcpu"]:
+            vcpu = int(a)
+        elif o in ["-p", "--extra"]:
+            extra = int(a)
+
+    doms = filter(lambda x : domid_match(domid, x),
+                  [parse_doms_info(dom)
+                  for dom in getDomains(None, 'all')])
+
+    if period is None and budget is None and vcpu is None and extra is None:
+        if domid is not None and doms == []: 
+            err("Domain '%s' does not exist." % domid)
+            usage('sched-rtglobal')
+        # print header if we aren't setting any parameters
+        print '%-33s %4s %6s %6s %4s %5s' % ('Name','ID','Period','Budget','Vcpu','Extra')
+        
+        for d in doms:
+            try:
+                if serverType == SERVER_XEN_API:
+                    info = server.xenapi.VM_metrics.get_VCPUs_params(
+                        server.xenapi.VM.get_metrics(
+                            get_single_vm(d['name'])))
+                else:
+                    info = server.xend.domain.sched_rtglobal_get(d['name'])
+            except xmlrpclib.Fault:
+                pass
+
+            if 'period' not in info or 'budget' not in info or 'vcpu' not in info or 'extra' not in info:
+                # domain does not support sched-rtglobal?
+                info = {'period': -1, 'budget': -1, 'vcpu': -1, 'extra': -1}
+
+            info['period'] = int(info['period'])
+            info['budget'] = int(info['budget'])
+            info['vcpu'] = int(info['vcpu'])
+            info['extra'] = int(info['extra'])
+            
+            info['name']  = d['name']
+            info['domid'] = str(d['domid'])
+            print( ("%(name)-32s %(domid)5s %(period)6d %(budget)6d %(vcpu)4d %(extra)5d") % info)
+    else:
+        if domid is None:
+            # place holder for system-wide scheduler parameters
+            err("No domain given.")
+            usage('sched-rtglobal')
+
+        if serverType == SERVER_XEN_API:
+            if doms[0]['domid']:
+                server.xenapi.VM.add_to_VCPUs_params_live(
+                    get_single_vm(domid),
+                    "period",
+                    period)
+                server.xenapi.VM.add_to_VCPUs_params_live(
+                    get_single_vm(domid),
+                    "budget",
+                    budget)
+                server.xenapi.VM.add_to_VCPUs_params_live(
+                    get_single_vm(domid),
+                    "vcpu",
+                    vcpu)
+                server.xenapi.VM.add_to_VCPUs_params_live(
+                    get_single_vm(domid),
+                    "extra",
+                    extra)
+            else:
+                server.xenapi.VM.add_to_VCPUs_params(
+                    get_single_vm(domid),
+                    "period",
+                    period)
+                server.xenapi.VM.add_to_VCPUs_params(
+                    get_single_vm(domid),
+                    "budget",
+                    budget)
+                server.xenapi.VM.add_to_VCPUs_params(
+                    get_single_vm(domid),
+                    "vcpu",
+                    vcpu)
+                server.xenapi.VM.add_to_VCPUs_params(
+                    get_single_vm(domid),
+                    "extra",
+                    extra)
+        else:
+            result = server.xend.domain.sched_rtglobal_set(domid, period, budget, vcpu, extra)
+            if result != 0:
+                err(str(result))
+
+# rtpartition
+def xm_sched_rtpartition(args):
+    """Get/Set options for rtpartition Scheduler."""
+    
+    check_sched_type('rtpartition')
+
+    try:
+        opts, params = getopt.getopt(args, "d:p:b:v:e:",
+            ["domain=", "period=", "budget=", "vcpu=", "extra="])
+    except getopt.GetoptError, opterr:
+        err(opterr)
+        usage('sched-rtpartition')
+
+    domid = None
+    period = None
+    budget = None
+    vcpu = None
+    extra = None
+
+    for o, a in opts:
+        if o in ["-d", "--domain"]:
+            domid = a
+        elif o in ["-p", "--period"]:
+            period = int(a)
+        elif o in ["-p", "--budget"]:
+            budget = int(a)
+        elif o in ["-p", "--vcpu"]:
+            vcpu = int(a)
+        elif o in ["-p", "--extra"]:
+            extra = int(a)
+
+    doms = filter(lambda x : domid_match(domid, x),
+                  [parse_doms_info(dom)
+                  for dom in getDomains(None, 'all')])
+
+    if period is None and budget is None and vcpu is None and extra is None:
+        if domid is not None and doms == []: 
+            err("Domain '%s' does not exist." % domid)
+            usage('sched-rtpartition')
+        # print header if we aren't setting any parameters
+        print '%-33s %4s %6s %6s %4s %5s' % ('Name','ID','Period','Budget','Vcpu','Extra')
+        
+        for d in doms:
+            try:
+                if serverType == SERVER_XEN_API:
+                    info = server.xenapi.VM_metrics.get_VCPUs_params(
+                        server.xenapi.VM.get_metrics(
+                            get_single_vm(d['name'])))
+                else:
+                    info = server.xend.domain.sched_rtpartition_get(d['name'])
+            except xmlrpclib.Fault:
+                pass
+
+            if 'period' not in info or 'budget' not in info or 'vcpu' not in info or 'extra' not in info:
+                # domain does not support sched-rtpartition?
+                info = {'period': -1, 'budget': -1, 'vcpu': -1, 'extra': -1}
+
+            info['period'] = int(info['period'])
+            info['budget'] = int(info['budget'])
+            info['vcpu'] = int(info['vcpu'])
+            info['extra'] = int(info['extra'])
+            
+            info['name']  = d['name']
+            info['domid'] = str(d['domid'])
+            print( ("%(name)-32s %(domid)5s %(period)6d %(budget)6d %(vcpu)4d %(extra)5d") % info)
+    else:
+        if domid is None:
+            # place holder for system-wide scheduler parameters
+            err("No domain given.")
+            usage('sched-rtpartition')
+
+        if serverType == SERVER_XEN_API:
+            if doms[0]['domid']:
+                server.xenapi.VM.add_to_VCPUs_params_live(
+                    get_single_vm(domid),
+                    "period",
+                    period)
+                server.xenapi.VM.add_to_VCPUs_params_live(
+                    get_single_vm(domid),
+                    "budget",
+                    budget)
+                server.xenapi.VM.add_to_VCPUs_params_live(
+                    get_single_vm(domid),
+                    "vcpu",
+                    vcpu)
+                server.xenapi.VM.add_to_VCPUs_params_live(
+                    get_single_vm(domid),
+                    "extra",
+                    extra)
+            else:
+                server.xenapi.VM.add_to_VCPUs_params(
+                    get_single_vm(domid),
+                    "period",
+                    period)
+                server.xenapi.VM.add_to_VCPUs_params(
+                    get_single_vm(domid),
+                    "budget",
+                    budget)
+                server.xenapi.VM.add_to_VCPUs_params(
+                    get_single_vm(domid),
+                    "vcpu",
+                    vcpu)
+                server.xenapi.VM.add_to_VCPUs_params(
+                    get_single_vm(domid),
+                    "extra",
+                    extra)
+        else:
+            result = server.xend.domain.sched_rtpartition_set(domid, period, budget, vcpu, extra)
             if result != 0:
                 err(str(result))
 
@@ -3799,6 +4041,8 @@ commands = {
     "sched-sedf": xm_sched_sedf,
     "sched-credit": xm_sched_credit,
     "sched-credit2": xm_sched_credit2,
+    "sched-rtglobal": xm_sched_rtglobal,
+    "sched-rtpartition": xm_sched_rtpartition,
     # block
     "block-attach": xm_block_attach,
     "block-detach": xm_block_detach,
