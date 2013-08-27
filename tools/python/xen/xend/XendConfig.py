@@ -702,6 +702,33 @@ class XendConfig(dict):
         else:
             cfg["vcpus_params"]["cap"] = int(cfg["vcpus_params"]["cap"])
 
+# # rt-xen
+#         if not cfg["vcpus_params"].has_key("period"):
+#             cfg["vcpus_params"]["period"] = \
+#                 int(sxp.child_value(sxp_cfg, "cpu_period", 10))
+#         else:
+#             cfg["vcpus_params"]["period"] = int(cfg["vcpus_params"]["period"])
+
+#         if not cfg["vcpus_params"].has_key("budget"):
+#             cfg["vcpus_params"]["budget"] = \
+#                 int(sxp.child_value(sxp_cfg, "cpu_budget", 4))
+#         else:
+#             cfg["vcpus_params"]["budget"] = int(cfg["vcpus_params"]["budget"])
+
+#         if not cfg["vcpus_params"].has_key("vcpu"):
+#             cfg["vcpus_params"]["vcpu"] = \
+#                 int(sxp.child_value(sxp_cfg, "cpu_vcpu", 0))
+#         else:
+#             cfg["vcpus_params"]["vcpu"] = int(cfg["vcpus_params"]["vcpu"])
+
+#         if not cfg["vcpus_params"].has_key("extra"):
+#             cfg["vcpus_params"]["extra"] = \
+#                 int(sxp.child_value(sxp_cfg, "cpu_extra", 0))
+#         else:
+#             cfg["vcpus_params"]["extra"] = int(cfg["vcpus_params"]["extra"])
+
+
+
         # Only extract options we know about.
         extract_keys = LEGACY_UNSUPPORTED_BY_XENAPI_CFG + \
                   XENAPI_CFG_TO_LEGACY_CFG.values()

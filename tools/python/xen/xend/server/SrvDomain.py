@@ -163,41 +163,41 @@ class SrvDomain(SrvDir):
         val = fn(req.args, {'dom': self.dom.getName()})
         return val
 
-# rtglobal
-    def op_domain_sched_rtglobal_get(self, _, req):
-        fn = FormFn(self.xd.domain_sched_rtglobal_get,
-                    [['dom', 'str']])
-        val = fn(req.args, {'dom': self.dom.getName()})
-        return val
+# # rtglobal
+#     def op_domain_sched_rtglobal_get(self, _, req):
+#         fn = FormFn(self.xd.domain_sched_rtglobal_get,
+#                     [['dom', 'str']])
+#         val = fn(req.args, {'dom': self.dom.getName()})
+#         return val
 
 
-    def op_domain_sched_rtglobal_set(self, _, req):
-        fn = FormFn(self.xd.domain_sched_rtglobal_set,
-                    [['dom', 'str'],
-                     ['period', 'int'],
-                     ['budget', 'int'],
-                     ['vcpu', 'int'],
-                     ['extra', 'int']])
-        val = fn(req.args, {'dom': self.dom.getName()})
-        return val
+#     def op_domain_sched_rtglobal_set(self, _, req):
+#         fn = FormFn(self.xd.domain_sched_rtglobal_set,
+#                     [['dom', 'str'],
+#                      ['period', 'int'],
+#                      ['budget', 'int'],
+#                      ['vcpu', 'int'],
+#                      ['extra', 'int']])
+#         val = fn(req.args, {'dom': self.dom.getName()})
+#         return val
 
-# rtpartition
-    def op_domain_sched_rtpartition_get(self, _, req):
-        fn = FormFn(self.xd.domain_sched_rtpartition_get,
-                    [['dom', 'str']])
-        val = fn(req.args, {'dom': self.dom.getName()})
-        return val
+# # rtpartition
+#     def op_domain_sched_rtpartition_get(self, _, req):
+#         fn = FormFn(self.xd.domain_sched_rtpartition_get,
+#                     [['dom', 'str']])
+#         val = fn(req.args, {'dom': self.dom.getName()})
+#         return val
 
 
-    def op_domain_sched_rtpartition_set(self, _, req):
-        fn = FormFn(self.xd.domain_sched_rtpartition_set,
-                    [['dom', 'str'],
-                     ['period', 'int'],
-                     ['budget', 'int'],
-                     ['vcpu', 'int'],
-                     ['extra', 'int']])
-        val = fn(req.args, {'dom': self.dom.getName()})
-        return val
+#     def op_domain_sched_rtpartition_set(self, _, req):
+#         fn = FormFn(self.xd.domain_sched_rtpartition_set,
+#                     [['dom', 'str'],
+#                      ['period', 'int'],
+#                      ['budget', 'int'],
+#                      ['vcpu', 'int'],
+#                      ['extra', 'int']])
+#         val = fn(req.args, {'dom': self.dom.getName()})
+#         return val
 
     def op_domain_sched_credit2_get(self, _, req):
         fn = FormFn(self.xd.domain_sched_credit2_get,

@@ -1672,7 +1672,7 @@ static PyObject *pyxc_sched_rtglobal_domain_set(XcObject *self,
     uint16_t vcpu = 0;
     uint16_t extra = 0;
     static char *kwd_list[] = { "domid", "period", "budget", "vcpu", "extra", NULL };
-    static char kwd_type[] = "I|L|L|H|H";
+    static char kwd_type[] = "I|LLhh";
     struct xen_domctl_sched_rtglobal sdom;
 
     if( !PyArg_ParseTupleAndKeywords(args, kwds, kwd_type, kwd_list,
@@ -1720,7 +1720,7 @@ static PyObject *pyxc_sched_rtpartition_domain_set(XcObject *self,
     uint16_t vcpu = 0;
     uint16_t extra = 0;
     static char *kwd_list[] = { "domid", "period", "budget", "vcpu", "extra", NULL };
-    static char kwd_type[] = "I|L|L|H|H";
+    static char kwd_type[] = "I|LLhh";
     struct xen_domctl_sched_rtpartition sdom;
 
     if( !PyArg_ParseTupleAndKeywords(args, kwds, kwd_type, kwd_list,

@@ -5309,15 +5309,15 @@ int main_sched_rtglobal(int argc, char **argv)
         opt_p = 1;
         break;
     case 'b':
-        budget = strtol(optarg, NULL, 4);
+        budget = strtol(optarg, NULL, 10);
         opt_b = 1;
         break;
     case 'v':
-        vcpu = strtol(optarg, NULL, 0);
+        vcpu = strtol(optarg, NULL, 10);
         opt_v = 1;
         break;
     case 'e':
-        extra = strtol(optarg, NULL, 0);
+        extra = strtol(optarg, NULL, 10);
         opt_e = 1;
         break;
     case 'c':
@@ -5335,7 +5335,7 @@ int main_sched_rtglobal(int argc, char **argv)
         return 1;
     }
 
-    if (!dom) { /* list all domain's credit scheduler info */
+    if (!dom) { /* list all domain's rtglobal scheduler info */
         return -sched_domain_output(LIBXL_SCHEDULER_RTGLOBAL,
                                     sched_rtglobal_domain_output,
                                     sched_default_pool_output,
@@ -5368,7 +5368,6 @@ int main_sched_rtglobal(int argc, char **argv)
     return 0;
 }
 
-
 // rtpartition
 int main_sched_rtpartition(int argc, char **argv)
 {
@@ -5399,15 +5398,15 @@ int main_sched_rtpartition(int argc, char **argv)
         opt_p = 1;
         break;
     case 'b':
-        budget = strtol(optarg, NULL, 4);
+        budget = strtol(optarg, NULL, 10);
         opt_b = 1;
         break;
     case 'v':
-        vcpu = strtol(optarg, NULL, 0);
+        vcpu = strtol(optarg, NULL, 10);
         opt_v = 1;
         break;
     case 'e':
-        extra = strtol(optarg, NULL, 0);
+        extra = strtol(optarg, NULL, 10);
         opt_e = 1;
         break;
     case 'c':
@@ -5425,7 +5424,7 @@ int main_sched_rtpartition(int argc, char **argv)
         return 1;
     }
 
-    if (!dom) { /* list all domain's credit scheduler info */
+    if (!dom) { /* list all domain's rtpartition scheduler info */
         return -sched_domain_output(LIBXL_SCHEDULER_RTPARTITION,
                                     sched_rtpartition_domain_output,
                                     sched_default_pool_output,
@@ -5522,7 +5521,7 @@ int main_sched_sedf(int argc, char **argv)
                 "allowed.\n");
     }
 
-    if (!dom) { /* list all domain's credit scheduler info */
+    if (!dom) { /* list all domain's sedf scheduler info */
         return -sched_domain_output(LIBXL_SCHEDULER_SEDF,
                                     sched_sedf_domain_output,
                                     sched_default_pool_output,
